@@ -26,7 +26,7 @@
 struct node {
     char path[256];
     struct node *next;
-}
+};
 
 
 /*
