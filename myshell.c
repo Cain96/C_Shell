@@ -284,6 +284,11 @@ void execute_command(char *args[],    /* 引数の配列 */
         pushhd(head);
         return;
     }
+    
+    if(strcmp(args[0], "dirs") == 0){
+        pushhd(head);
+        return;
+    }
 
 
     /*
