@@ -36,6 +36,8 @@ struct node {
 int parse(char [], char *[]);
 void execute_command(char *[], int, struct node*);
 void cd (char *[]);
+void pushhd (struct node*);
+void dirs (struct node*);
 
 /*----------------------------------------------------------------------------
  *
