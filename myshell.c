@@ -414,4 +414,22 @@ void cd (char *args[]) {
      return;
  }
  
+/*----------------------------------------------------------------------------
+ *  popd機能の実装
+ *--------------------------------------------------------------------------*/
+ void popd(struct node **head) {
+     struct node *post;
+     
+     post = *head;
+     
+     if(post->path==NULL || chdir(post->path)==-1){
+         fprintf(stderr,"popd Failure\n");
+         return;
+     }
+     
+     *head = post -> next;
+     free(post);
+     return;
+ }
+ 
 /*-- END OF FILE -----------------------------------------------------------*/
