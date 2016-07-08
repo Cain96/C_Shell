@@ -38,6 +38,7 @@ void execute_command(char *[], int, struct node**);
 void cd (char *[]);
 void pushd (struct node**);
 void dirs (struct node**);
+void popd (struct node**);
 
 /*----------------------------------------------------------------------------
  *
