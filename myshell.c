@@ -422,7 +422,7 @@ void cd (char *args[]) {
      
      post = *head;
      
-     if(post->path==NULL || chdir(post->path)==-1){
+     if(post->path!=NULL && chdir(post->path)==-1){
          fprintf(stderr,"popd Failure\n");
          return;
      }
