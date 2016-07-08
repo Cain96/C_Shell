@@ -21,6 +21,15 @@
 #define MAXARGNUM  256     /* 最大の引数の数 */
 
 /*
+ *  構造体の定義
+ */
+struct node {
+    char path[];
+    struct node *next;
+}
+
+
+/*
  * ローカルプロトタイプ宣言
  */
 
