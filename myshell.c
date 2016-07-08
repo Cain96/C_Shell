@@ -24,7 +24,7 @@
  *  構造体の定義
  */
 struct node {
-    char path[];
+    char path[256];
     struct node *next;
 }
 
