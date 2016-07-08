@@ -36,7 +36,7 @@ struct node {
 int parse(char [], char *[]);
 void execute_command(char *[], int, struct node*);
 void cd (char *[]);
-void pushhd (struct node*);
+void pushd (struct node*);
 void dirs (struct node*);
 
 /*----------------------------------------------------------------------------
@@ -282,13 +282,13 @@ void execute_command(char *args[],    /* 引数の配列 */
         return;
     }
     
-    if(strcmp(args[0], "pushhd") == 0){
-        pushhd(head);
+    if(strcmp(args[0], "pushd") == 0){
+        pushd(head);
         return;
     }
     
     if(strcmp(args[0], "dirs") == 0){
-        pushhd(head);
+        dirs(head);
         return;
     }
 
@@ -368,16 +368,16 @@ void cd (char *args[]) {
 }
 
 /*----------------------------------------------------------------------------
- *  pushhd機能の実装
+ *  pushd機能の実装
  *--------------------------------------------------------------------------*/
- void pushhd(struct node *head){
+ void pushd(struct node *head){
      struct node *new;
      
      new = (struct node *)malloc(sizeof(struct node));  //領域確保
      new -> next = *head;
      
      if(getcwd(new->path, 256) == NULL){    //エラー時処理
-         fprintf(stderr,"pushhd Failure\n");
+         fprintf(stderr,"pushd Failure\n");
          return;
      }
      
