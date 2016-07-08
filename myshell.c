@@ -385,4 +385,22 @@ void cd (char *args[]) {
      return;
  }
  
+ /*----------------------------------------------------------------------------
+ *  dirs機能の実装
+ *--------------------------------------------------------------------------*/
+ void dirs(struct node *head) {
+     int i=0;
+     
+     if(head == NULL) {
+         fprintf(stderr,"There is no in Dirstack");
+         return;
+     }
+     
+     while (head == NULL) {
+         printf("%d : %s\n", &i, &(head->path));
+         head = head -> next;
+     }
+     return;
+ }
+ 
 /*-- END OF FILE -----------------------------------------------------------*/
