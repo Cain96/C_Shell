@@ -292,6 +292,11 @@ void execute_command(char *args[],    /* 引数の配列 */
         dirs(head);
         return;
     }
+    
+    if(strcmp(args[0], "popd") == 0){
+        popd(head);
+        return;
+    }
 
 
     /*
