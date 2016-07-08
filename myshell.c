@@ -362,11 +362,15 @@ void cd (char *args[]) {
         path = getenv("HOME");
     } else {    //引数ありの時
         if(args[1][0] == '/') {      //絶対パスの時
-            path = args[0];
+            path = args[1];
         }else {     //相対パスの時
             getcwd(current_dir, 256);   //カレントディレクトリの取得
-            path = strcat(current_dir, "/");
-            path = strcat(path, args[1]);
+            if(strcmp(current_dir,"/")!=0){
+                path = strcat(current_dir, "/");
+                path = strcat(path, args[1]);
+            }else{
+                path = strcat(current_dir, args[1]);
+            }
         }
     }
     if(path != NULL && chdir(path) == -1){
@@ -422,6 +426,11 @@ void cd (char *args[]) {
      struct node *post;
      
      post = *head;
+     
+     if(post==NULL) {
+         fprintf(stderr,"There is no in Dirstack");
+         return;
+     }
      
      if(post->path!=NULL && chdir(post->path)==-1){
          fprintf(stderr,"popd Failure\n");
