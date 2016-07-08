@@ -358,5 +358,23 @@ void cd (char *args[]) {
         fprintf(stderr,"%s is irregal path.\n",&path);
     }
 }
+
+/*----------------------------------------------------------------------------
+ *  pushhd機能の実装
+ *--------------------------------------------------------------------------*/
+ void pushhd(struct node *head){
+     struct node *new;
+     
+     new = (struct node *)malloc(sizeof(struct node));  //領域確保
+     new -> next = *head;
+     
+     if(getcwd(new->path, 256) == NULL){    //エラー時処理
+         fprintf(stderr,"pushhd Failure\n");
+         return;
+     }
+     
+     head = *new;
+     return;
+ }
  
 /*-- END OF FILE -----------------------------------------------------------*/
