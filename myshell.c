@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
                                     command_status = 1 : バックグラウンドで実行
                                     command_status = 2 : シェルの終了
                                     command_status = 3 : 何もしない */
+    struct node *head;
 
     /*
      *  ̵無限ループ
@@ -109,7 +110,7 @@ int main(int argc, char *argv[])
          *  コマンド実行
          */
 
-        execute_command(args, command_status);
+        execute_command(args, command_status, &head);
     }
 
     return 0;
