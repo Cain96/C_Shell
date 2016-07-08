@@ -257,7 +257,8 @@ int parse(char buffer[],        /* バッファ */
  *--------------------------------------------------------------------------*/
 
 void execute_command(char *args[],    /* 引数の配列 */
-                     int command_status)     /* コマンドの状態 */
+                     int command_status     /* コマンドの状態 */
+                     struct node *head)      //  スタックの先頭ポインタ
 {
     int pid;      /* プロセスID */
     int status;   /* 子プロセスの終了ステータス */
