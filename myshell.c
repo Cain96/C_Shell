@@ -372,6 +372,7 @@ void cd (char *args[]) {
     if(path != NULL && chdir(path) == -1){
         fprintf(stderr,"%s is irregal path.\n",&path);
     }
+    return;
 }
 
 /*----------------------------------------------------------------------------
