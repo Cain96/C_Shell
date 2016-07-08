@@ -34,10 +34,10 @@ struct node {
  */
 
 int parse(char [], char *[]);
-void execute_command(char *[], int, struct node*);
+void execute_command(char *[], int, struct node**);
 void cd (char *[]);
-void pushd (struct node*);
-void dirs (struct node*);
+void pushd (struct node**);
+void dirs (struct node**);
 
 /*----------------------------------------------------------------------------
  *
@@ -269,8 +269,8 @@ int parse(char buffer[],        /* バッファ */
  *--------------------------------------------------------------------------*/
 
 void execute_command(char *args[],    /* 引数の配列 */
-                     int command_status     /* コマンドの状態 */
-                     struct node *head)      //  スタックの先頭ポインタ
+                     int command_status,     /* コマンドの状態 */
+                     struct node **head)      //  スタックの先頭ポインタ
 {
     int pid;      /* プロセスID */
     int status;   /* 子プロセスの終了ステータス */
@@ -279,7 +279,7 @@ void execute_command(char *args[],    /* 引数の配列 */
      *  内部コマンドの場合
      */
     if(strcmp(args[0], "cd") == 0){
-        cd(args;
+        cd(args);
         return;
     }
     
@@ -371,7 +371,7 @@ void cd (char *args[]) {
 /*----------------------------------------------------------------------------
  *  pushd機能の実装
  *--------------------------------------------------------------------------*/
- void pushd(struct node *head){
+ void pushd(struct node **head){
      struct node *new;
      
      new = (struct node *)malloc(sizeof(struct node));  //領域確保
@@ -382,24 +382,28 @@ void cd (char *args[]) {
          return;
      }
      
-     head = *new;
+     *head = new;
      return;
  }
  
  /*----------------------------------------------------------------------------
  *  dirs機能の実装
  *--------------------------------------------------------------------------*/
- void dirs(struct node *head) {
+ void dirs(struct node **head) {
      int i=0;
+     struct node *new;
      
      if(head == NULL) {
          fprintf(stderr,"There is no in Dirstack");
          return;
      }
      
-     while (head == NULL) {
-         printf("%d : %s\n", &i, &(head->path));
-         head = head -> next;
+     new = *head;
+     
+     while (new != NULL) {
+         i++;
+         printf("%d : %s\n", i, new->path);
+         new = new -> next;
      }
      return;
  }
