@@ -25,7 +25,7 @@
  */
 
 int parse(char [], char *[]);
-void execute_command(char *[], int);
+void execute_command(char *[], int, struct node*);
 void cd (char *[]);
 
 /*----------------------------------------------------------------------------
