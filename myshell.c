@@ -265,8 +265,8 @@ void execute_command(char *args[],    /* 引数の配列 */
     /*
      *  内部コマンドの場合
      */
-    if(strcmp(arg[0], "cd") == 0){
-        cd(arg);
+    if(strcmp(args[0], "cd") == 0){
+        cd(args);
         return;
     }
 
@@ -321,4 +321,27 @@ void execute_command(char *args[],    /* 引数の配列 */
     return;
 }
 
+/*----------------------------------------------------------------------------
+ *  cd機能の実装
+ *--------------------------------------------------------------------------*/
+void cd (char *args[]) {
+    char current_dir[256];
+    char *path;
+    
+    if(args[1] == NULL) {    //引数なしの時
+        path = getenv("HOME");
+    } else {    //引数ありの時
+        if(args[1][0] == '/') {      //絶対パスの時
+            path = args[0];
+        }else {     //相対パスの時
+            getcwd(current_dir, 256);   //カレントディレクトリの取得
+            path = strcat(current_dir, "/");
+            path = strcat(path, args[1]);
+        }
+    }
+    if(path != NULL && chdir(path) == -1){
+        fprintf(stderr,"%s is irregal path.\n",&path);
+    }
+}
+ 
 /*-- END OF FILE -----------------------------------------------------------*/
