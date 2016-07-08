@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------*/
 
 /*
- *  院クルードファイル
+ *  インクルードファイル
  */
 
 #include <stdio.h>
@@ -260,7 +260,14 @@ void execute_command(char *args[],    /* 引数の配列 */
 {
     int pid;      /* プロセスID */
     int status;   /* 子プロセスの終了ステータス */
+    
+    /*
+     *  内部コマンドの場合
+     */
 
+    /*
+     *  外部コマンドの場合
+     */
     /*
      *  子プロセスの生成
      *
@@ -268,6 +275,11 @@ void execute_command(char *args[],    /* 引数の配列 */
      */
 
     /******** Your Program ********/
+    pid = fork();
+    if (pid < 0) {
+        perror("fork");
+        exit(-1);
+    }
 
     /*
      *  子プロセスの場合には引数として与えられたものを実行
@@ -278,12 +290,20 @@ void execute_command(char *args[],    /* 引数の配列 */
      */
 
     /******** Your Program ********/
+    if(pid == 0){
+        execvp(args[0], args);
+        perror(args[0]);
+        exit(-1);
+    }
 
     /*
-     *  コマンドの状態がフォアグラウンドならば、関数を抜ける
+     *  コマンドの状態がバックグラウンドならば、関数を抜ける
      */
 
     /******** Your Program ********/
+    if (command_status == 1){
+        return;
+    }
 
     /*
      *  ここに来るのはコマンドの状態がフォアグラウンドの場合
@@ -291,6 +311,7 @@ void execute_command(char *args[],    /* 引数の配列 */
      */
 
     /******** Your Program ********/
+    wait(&status);
 
     return;
 }
