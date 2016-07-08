@@ -264,6 +264,10 @@ void execute_command(char *args[],    /* 引数の配列 */
     /*
      *  内部コマンドの場合
      */
+    if(strcmp(arg[0], "cd") == 0){
+        cd(arg);
+        return;
+    }
 
     /*
      *  外部コマンドの場合
