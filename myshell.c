@@ -280,10 +280,11 @@ void execute_command(char *args[],    /* 引数の配列 */
         return;
     }
     
-        if(strcmp(args[0], "pushhd") == 0){
+    if(strcmp(args[0], "pushhd") == 0){
         pushhd(head);
         return;
     }
+
 
     /*
      *  外部コマンドの場合
