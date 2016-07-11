@@ -34,7 +34,6 @@ struct line {
 
 int parse(char [], char *[]);
 void execute_command(char *[], int);
-void history (struct line**);
 
 /*----------------------------------------------------------------------------
  *
