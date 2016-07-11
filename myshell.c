@@ -73,12 +73,20 @@ int main(int argc, char *argv[])
 
         /*
          *  標準出力から1行を command_buffer へ読み込む
-         *  入力が何もなければ回j業を出力してプロンプト表示へ戻る
+         *  入力が何もなければ改行を出力してプロンプト表示へ戻る
          */
 
         if(fgets(command_buffer, BUFLEN, stdin) == NULL) {
             printf("\n");
             continue;
+        } else if(*command_buffer != '\n') {
+            if(number_cmd<32){
+                strcpy(array_history[number_cmd], command_buffer);
+            }else{
+                i = number_cmd - COMMAX;
+                strcpy(array_history[i], command_buffer);
+            }
+            number_cmd++;
         }
 
         /*
