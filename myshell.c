@@ -53,14 +53,18 @@ int main(int argc, char *argv[])
                                     command_status = 2 : シェルの終了
                                     command_status = 3 : 何もしない */
     char array_history[COMMAX][BUFLEN]; /* ヒストリー用配列 */
-    int number_cmd                      /* コマンド数 */
-
+    int number_cmd = 0;                  /* コマンド数 */
+    int i;
+    
+    for(i=0; i < COMMAX; i++){
+        strcpy(array_history[i], "");
+    }
     /*
      *  ̵無限ループ
      */
 
     for(;;) {
-
+        
         /*
          *  プロンプト表示
          */
