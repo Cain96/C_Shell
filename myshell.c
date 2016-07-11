@@ -19,13 +19,15 @@
 
 #define BUFLEN    1024     /* コマンド用のバッファの大きさ */
 #define MAXARGNUM  256     /* 最大の引数の数 */
+#define COMMAX     32      /* コマンド履歴の最大 */
 
 /*
  * ローカルプロトタイプ宣言
  */
 
 int parse(char [], char *[]);
-void execute_command(char *[], int);
+void execute_command(char *[], int, char [COMMAX][BUFLEN], int);
+void history(char array_history[COMMAX][BUFLEN], int);
 
 /*----------------------------------------------------------------------------
  *
