@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
          *  コマンド実行
          */
 
-        execute_command(args, command_status);
+        execute_command(args, command_status, array_history, number_cmd);
     }
 
     return 0;
@@ -258,7 +258,9 @@ int parse(char buffer[],        /* バッファ */
  *--------------------------------------------------------------------------*/
 
 void execute_command(char *args[],    /* 引数の配列 */
-                     int command_status)     /* コマンドの状態 */
+                     int command_status     /* コマンドの状態 */
+                     char array_history[COMMAX][BUFLEN],
+                     int number_cmd)
 {
     int pid;      /* プロセスID */
     int status;   /* 子プロセスの終了ステータス */
