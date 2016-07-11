@@ -266,7 +266,11 @@ void execute_command(char *args[],    /* 引数の配列 */
     /*
      *  内部コマンドの場合
      */
-
+    if(strcmp(args[0],"history")==0){
+        history(array_history, number_cmd) ;
+        return;
+    }
+     
     /*
      *  外部コマンドの場合
      */
