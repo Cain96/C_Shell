@@ -272,7 +272,7 @@ int parse(char buffer[],        /* バッファ */
  *--------------------------------------------------------------------------*/
 
 void execute_command(char *args[],    /* 引数の配列 */
-                     int command_status     /* コマンドの状態 */
+                     int command_status,     /* コマンドの状態 */
                      char array_history[COMMAX][BUFLEN],
                      int number_cmd)
 {
