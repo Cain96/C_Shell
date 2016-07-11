@@ -326,4 +326,23 @@ void execute_command(char *args[],    /* 引数の配列 */
     return;
 }
 
+void history (char array_history[COMMAX][BUFLEN], int number_cmd) {
+    int i;
+    
+    if (number_cmd < COMMAX) {
+        for(i=0; i < COMMAX; i++){
+            printf("[%d] > %s\n", i, history[i]);
+        }
+    }else {
+        int j;
+        i = number_cmd - COMMAX;
+        j = i;
+        for(i; i < COMMAX; i++){
+            printf("[%d] > %s\n", i, history[i]);
+        }
+        for(i=0; i < j; i++){
+            printf("[%d] > %s\n", i, history[i]);
+        }
+    }
+}
 /*-- END OF FILE -----------------------------------------------------------*/
