@@ -342,19 +342,20 @@ void history (char array_history[COMMAX][BUFLEN], int number_cmd) {
     int i;
     
     if (number_cmd < COMMAX) {
-        for(i=0; i < COMMAX; i++){
-            printf("[%d] > %s\n", i, history[i]);
+        for(i=0; i < number_cmd; i++){
+            printf("[%d] > %s", i, array_history[i]);
         }
     }else {
         int j;
         i = number_cmd - COMMAX;
         j = i;
         for(i; i < COMMAX; i++){
-            printf("[%d] > %s\n", i, history[i]);
+            printf("[%d] > %s", i+1, array_history[i]);
         }
         for(i=0; i < j; i++){
-            printf("[%d] > %s\n", i, history[i]);
+            printf("[%d] > %s", i+COMMAX+1, array_history[i]);
         }
     }
+    return;
 }
 /*-- END OF FILE -----------------------------------------------------------*/
