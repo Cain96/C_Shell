@@ -73,7 +73,12 @@ int main(int argc, char *argv[])
             printf("\n");
             continue;
         }
-
+        
+       /*
+         *  wildcard検討
+         */
+         wildcard(command_buffer);
+         
         /*
          *  入力されたバッファ内のコマンドの解析
          *
