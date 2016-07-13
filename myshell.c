@@ -323,4 +323,29 @@ void execute_command(char *args[],    /* 引数の配列 */
     return;
 }
 
+/*
+*  wildcard機能の実装
+*/
+
+void wildcard (char *command_buffer) {
+    char *p;
+    char path[256], add[256]=" ";
+    DIR *dir;
+    struct dirent *dp;
+    
+    while((p = strstr(command_buffer, "*")) != NULL) {
+        getcwd(path,256);
+        dir = opendir(path);
+        for(dp=readdir(dir);dp!=NULL;dp=readdir(dir)){
+            if(dp -> d_type == 8){
+                strcat(strcat(add, dp->d_name)," ");
+            }
+        }
+        closedir(dir);
+        strcpy(command_buffer, add);
+    }
+    printf("%s", command_buffer);
+    return;
+}
+
 /*-- END OF FILE -----------------------------------------------------------*/
