@@ -28,6 +28,7 @@
 int parse(char [], char *[]);
 void execute_command(char *[], int, char [COMMAX][BUFLEN], int);
 void history(char array_history[COMMAX][BUFLEN], int);
+void precommand(char *[], char array_history[COMMAX][BUFLEN], int);
 
 /*----------------------------------------------------------------------------
  *
