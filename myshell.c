@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
             if(number_cmd<32){
                 strcpy(array_history[number_cmd], command_buffer);
             }else{
-                i = number_cmd - COMMAX;
+                i = number_cmd % COMMAX;
                 strcpy(array_history[i], command_buffer);
             }
             number_cmd++;
