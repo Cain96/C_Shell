@@ -27,6 +27,7 @@
 
 int parse(char [], char *[]);
 void execute_command(char *[], int);
+void wildcard(char *);
 
 /*----------------------------------------------------------------------------
  *
