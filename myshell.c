@@ -286,6 +286,11 @@ void execute_command(char *args[],    /* 引数の配列 */
         history(array_history, number_cmd) ;
         return;
     }
+    
+    if(args[0][0] == '!'){
+        precommand(args, array_history, number_cmd) ;
+        return;
+    }
      
     /*
      *  外部コマンドの場合
