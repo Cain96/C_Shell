@@ -338,16 +338,20 @@ void execute_command(char *args[],    /* 引数の配列 */
     return;
 }
 
+
+/*----------------------------------------------------------------------------
+ *  history機能の実装
+ *--------------------------------------------------------------------------*/
 void history (char array_history[COMMAX][BUFLEN], int number_cmd) {
     int i;
     
     if (number_cmd < COMMAX) {
         for(i=0; i < number_cmd; i++){
-            printf("[%d] > %s", i, array_history[i]);
+            printf("[%d] > %s", i+1, array_history[i]);
         }
     }else {
         int j;
-        i = number_cmd - COMMAX;
+        i = number_cmd % COMMAX;
         j = i;
         for(i; i < COMMAX; i++){
             printf("[%d] > %s", i+1, array_history[i]);
