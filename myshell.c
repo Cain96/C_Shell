@@ -368,4 +368,99 @@ void history (char array_history[COMMAX][BUFLEN], int number_cmd) {
     }
     return;
 }
+
+/*----------------------------------------------------------------------------
+ *  !!/![string]機能の実装
+ *--------------------------------------------------------------------------*/
+
+void precommand (char *args[], char array_history[COMMAX][BUFLEN], int number_cmd) {
+    char cmd[BUFLEN];
+    int i;
+    int command_status;
+    
+    if(strcmp(args[0],"!!") == 0) {
+        if (number_cmd < COMMAX) {
+            if(array_history[number_cmd-2] != NULL){
+                strcpy(cmd, array_history[number_cmd-2]);
+                strcpy(array_history[number_cmd-1], cmd);
+            } else {
+                fprintf(stderr, "Command Not Found.\n");
+                return;
+            }
+        } else {
+            if((i = (number_cmd-1) % COMMAX) == 0){
+                strcpy(cmd, array_history[32]);
+                strcpy(array_history[number_cmd-1], cmd);
+            } else {
+                strcpy(cmd, array_history[i-1]);
+                strcpy(array_history[number_cmd-1], cmd);
+            }
+        }
+    } else {
+        if (number_cmd < COMMAX) {
+            for(i=number_cmd-2; 0<=i; i--){
+                if(strncmp(array_history[i], args[0]+1, strlen(args[0]+1))==0){
+                    strcpy(cmd, array_history[i]);
+                    strcpy(array_history[number_cmd-1], cmd);
+                    break;
+                }
+                if(i==0){
+                    fprintf(stderr,"Command Not Found.\n");
+                    return;
+                }
+            }
+        } else {
+            for(i=((number_cmd-2)%COMMAX); 0<=i; i--){
+                if(strncmp(array_history[i], args[0]+1, strlen(args[0]+1))==0){
+                    strcpy(cmd, array_history[i]);
+                    strcpy(array_history[number_cmd-1], cmd);
+                    break;
+                }
+                if(i==0){
+                    int j = (number_cmd-1)%COMMAX;
+                    int k;
+                    for(k=COMMAX; j<k; k--){
+                        if(strncmp(array_history[k], args[0]+1, strlen(args[0]+1))==0){
+                            strcpy(cmd, array_history[k]);
+                            strcpy(array_history[number_cmd-1], cmd);
+                            break;
+                        }
+                        if(k==j+1){
+                            fprintf(stderr,"Command Not Found.\n");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    /*
+     *  入力されたバッファ内のコマンドの解析
+     *
+     *  返り値はコマンドの状態
+     */
+
+    command_status = parse(cmd, args);
+
+    /*
+      終了コマンドならばプログラム終了
+     *  引数が何もなければプロンプト表示へ戻る
+     */
+
+    if(command_status == 2) {
+    printf("done.\n");
+        exit(EXIT_SUCCESS);
+    } else if(command_status == 3) {
+        return;
+    }
+
+    /*
+     *  コマンド実行
+     */
+
+    execute_command(args, command_status, array_history, number_cmd);
+
+    return;
+}
 /*-- END OF FILE -----------------------------------------------------------*/
