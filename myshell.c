@@ -22,11 +22,24 @@
 #define MAXARGNUM  256     /* 最大の引数の数 */
 
 /*
+ *  構造体の定義
+ */
+struct node {
+    char path[256];
+    struct node *next;
+};
+
+
+/*
  * ローカルプロトタイプ宣言
  */
 
 int parse(char [], char *[]);
-void execute_command(char *[], int);
+void execute_command(char *[], int, struct node**);
+void cd (char *[]);
+void pushd (struct node**);
+void dirs (struct node**);
+void popd (struct node**);
 void wildcard(char *);
 
 /*----------------------------------------------------------------------------
@@ -52,6 +65,7 @@ int main(int argc, char *argv[])
                                     command_status = 1 : バックグラウンドで実行
                                     command_status = 2 : シェルの終了
                                     command_status = 3 : 何もしない */
+    struct node *head;
 
     /*
      *  ̵無限ループ
@@ -104,7 +118,7 @@ int main(int argc, char *argv[])
          *  コマンド実行
          */
 
-        execute_command(args, command_status);
+        execute_command(args, command_status, &head);
     }
 
     return 0;
@@ -263,7 +277,8 @@ int parse(char buffer[],        /* バッファ */
  *--------------------------------------------------------------------------*/
 
 void execute_command(char *args[],    /* 引数の配列 */
-                     int command_status)     /* コマンドの状態 */
+                     int command_status,     /* コマンドの状態 */
+                     struct node **head)      //  スタックの先頭ポインタ
 {
     int pid;      /* プロセスID */
     int status;   /* 子プロセスの終了ステータス */
@@ -271,6 +286,26 @@ void execute_command(char *args[],    /* 引数の配列 */
     /*
      *  内部コマンドの場合
      */
+    if(strcmp(args[0], "cd") == 0){
+        cd(args);
+        return;
+    }
+    
+    if(strcmp(args[0], "pushd") == 0){
+        pushd(head);
+        return;
+    }
+    
+    if(strcmp(args[0], "dirs") == 0){
+        dirs(head);
+        return;
+    }
+    
+    if(strcmp(args[0], "popd") == 0){
+        popd(head);
+        return;
+    }
+
 
     /*
      *  外部コマンドの場合
@@ -348,4 +383,95 @@ void wildcard (char *command_buffer) {
     return;
 }
 
+/*----------------------------------------------------------------------------
+ *  cd機能の実装
+ *--------------------------------------------------------------------------*/
+void cd (char *args[]) {
+    char current_dir[256];
+    char *path;
+    
+    if(args[1] == NULL) {    //引数なしの時
+        path = getenv("HOME");
+    } else {    //引数ありの時
+        if(args[1][0] == '/') {      //絶対パスの時
+            path = args[1];
+        }else {     //相対パスの時
+            getcwd(current_dir, 256);   //カレントディレクトリの取得
+            if(strcmp(current_dir,"/")!=0){
+                path = strcat(current_dir, "/");
+                path = strcat(path, args[1]);
+            }else{
+                path = strcat(current_dir, args[1]);
+            }
+        }
+    }
+    if(path != NULL && chdir(path) == -1){
+        fprintf(stderr,"%s is irregal path.\n",&path);
+    }
+    return;
+}
+
+/*----------------------------------------------------------------------------
+ *  pushd機能の実装
+ *--------------------------------------------------------------------------*/
+ void pushd(struct node **head){
+     struct node *new;
+     
+     new = (struct node *)malloc(sizeof(struct node));  //領域確保
+     new -> next = *head;
+     
+     if(getcwd(new->path, 256) == NULL){    //エラー時処理
+         fprintf(stderr,"pushd Failure\n");
+         return;
+     }
+     
+     *head = new;
+     return;
+ }
+ 
+ /*----------------------------------------------------------------------------
+ *  dirs機能の実装
+ *--------------------------------------------------------------------------*/
+ void dirs(struct node **head) {
+     int i=0;
+     struct node *new;
+     
+     if(head == NULL) {
+         fprintf(stderr,"There is no in Dirstack");
+         return;
+     }
+     
+     new = *head;
+     
+     while (new != NULL) {
+         i++;
+         printf("%d : %s\n", i, new->path);
+         new = new -> next;
+     }
+     return;
+ }
+ 
+/*----------------------------------------------------------------------------
+ *  popd機能の実装
+ *--------------------------------------------------------------------------*/
+ void popd(struct node **head) {
+     struct node *post;
+     
+     post = *head;
+     
+     if(post==NULL) {
+         fprintf(stderr,"There is no in Dirstack");
+         return;
+     }
+     
+     if(post->path!=NULL && chdir(post->path)==-1){
+         fprintf(stderr,"popd Failure\n");
+         return;
+     }
+     
+     *head = post -> next;
+     free(post);
+     return;
+ }
+ 
 /*-- END OF FILE -----------------------------------------------------------*/
