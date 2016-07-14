@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
          *  プロンプト表示
          */
 
-        printf("Command : ");
+        printf("%s : ",pmt);
 
         /*
          *  標準出力から1行を command_buffer へ読み込む
