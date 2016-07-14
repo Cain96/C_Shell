@@ -364,7 +364,7 @@ void execute_command(char *args[],    /* 引数の配列 */
 
 void wildcard (char *command_buffer) {
     char *p;
-    char path[256], add[256]=" ";
+    char path[256], add[256]="", tmp[256]="";
     DIR *dir;
     struct dirent *dp;
     
@@ -377,8 +377,13 @@ void wildcard (char *command_buffer) {
             }
         }
         closedir(dir);
-        strcpy(command_buffer, add);
+        
+        *p = '\0';
+        p+=1;
+        strcpy(tmp, p);
+        strcat(strcat(command_buffer, add),tmp);
     }
+    
     printf("%s", command_buffer);
     return;
 }
