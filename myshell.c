@@ -322,4 +322,16 @@ void execute_command(char *args[],    /* 引数の配列 */
     return;
 }
 
+/*
+*  prompt機能の実装
+*/
+void prompt(char *args[],cahr *pmt){
+    if(args[1] == NULL){
+        fprintf(stderr, "Input for prompt name.\n");
+    }else{
+        strcpy(pmt, args[1]);
+    }
+    return;
+}
+
 /*-- END OF FILE -----------------------------------------------------------*/
