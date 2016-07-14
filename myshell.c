@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
          *  コマンド実行
          */
 
-        execute_command(args, command_status);
+        execute_command(args, command_status, pmt);
     }
 
     return 0;
