@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     int i;
     
     for(i=0; i < COMMAX; i++){
-        strcpy(array_history[i], "");
+        strcpy(array_history[i], "\0");
     }
     
     /*
@@ -537,7 +537,7 @@ void precommand (char *args[], struct node **head, char array_history[COMMAX][BU
     
     if(strcmp(args[0],"!!") == 0) {
         if (number_cmd < COMMAX) {
-            if(array_history[number_cmd-2] != NULL){
+            if(strcmp(array_history[number_cmd-2],"\0")!=0){
                 strcpy(cmd, array_history[number_cmd-2]);
                 strcpy(array_history[number_cmd-1], cmd);
             } else {
