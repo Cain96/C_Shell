@@ -51,6 +51,7 @@ int main(int argc, char *argv[])
                                     command_status = 1 : バックグラウンドで実行
                                     command_status = 2 : シェルの終了
                                     command_status = 3 : 何もしない */
+    char pmt[256]="Command"
 
     /*
      *  ̵無限ループ
