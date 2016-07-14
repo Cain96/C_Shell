@@ -25,8 +25,8 @@
  */
 
 int parse(char [], char *[]);
-void execute_command(char *[], int);
-void prompt(char *[], char *)
+void execute_command(char *[], int, char *);
+void prompt(char *[], char *);
 
 /*----------------------------------------------------------------------------
  *
@@ -327,7 +327,7 @@ void execute_command(char *args[],    /* 引数の配列 */
 /*
 *  prompt機能の実装
 */
-void prompt(char *args[],cahr *pmt){
+void prompt(char *args[],char *pmt){
     if(args[1] == NULL){
         fprintf(stderr, "Input for prompt name.\n");
     }else{
