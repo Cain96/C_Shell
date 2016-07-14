@@ -20,6 +20,7 @@
 
 #define BUFLEN    1024     /* コマンド用のバッファの大きさ */
 #define MAXARGNUM  256     /* 最大の引数の数 */
+#define COMMAX     32      /* コマンド履歴の最大 */
 
 /*
  *  構造体の定義
@@ -35,12 +36,14 @@ struct node {
  */
 
 int parse(char [], char *[]);
-void execute_command(char *[], int, struct node**);
+void execute_command(char *[], int, struct node**, char [COMMAX][BUFLEN], int);
 void cd (char *[]);
 void pushd (struct node**);
 void dirs (struct node**);
 void popd (struct node**);
 void wildcard(char *);
+void history(char array_history[COMMAX][BUFLEN], int);
+void precommand(char *[], struct node ** ,char array_history[COMMAX][BUFLEN], int);
 
 /*----------------------------------------------------------------------------
  *
@@ -66,13 +69,20 @@ int main(int argc, char *argv[])
                                     command_status = 2 : シェルの終了
                                     command_status = 3 : 何もしない */
     struct node *head;
-
+    char array_history[COMMAX][BUFLEN]; /* ヒストリー用配列 */
+    int number_cmd = 0;                  /* コマンド数 */
+    int i;
+    
+    for(i=0; i < COMMAX; i++){
+        strcpy(array_history[i], "");
+    }
+    
     /*
      *  ̵無限ループ
      */
 
     for(;;) {
-
+        
         /*
          *  プロンプト表示
          */
@@ -81,12 +91,20 @@ int main(int argc, char *argv[])
 
         /*
          *  標準出力から1行を command_buffer へ読み込む
-         *  入力が何もなければ回j業を出力してプロンプト表示へ戻る
+         *  入力が何もなければ改行を出力してプロンプト表示へ戻る
          */
 
         if(fgets(command_buffer, BUFLEN, stdin) == NULL) {
             printf("\n");
             continue;
+        } else if(*command_buffer != '\n') {
+            if(number_cmd<32){
+                strcpy(array_history[number_cmd], command_buffer);
+            }else{
+                i = number_cmd % COMMAX;
+                strcpy(array_history[i], command_buffer);
+            }
+            number_cmd++;
         }
         
        /*
@@ -118,7 +136,7 @@ int main(int argc, char *argv[])
          *  コマンド実行
          */
 
-        execute_command(args, command_status, &head);
+        execute_command(args, command_status, &head, array_history, number_cmd);
     }
 
     return 0;
@@ -278,7 +296,9 @@ int parse(char buffer[],        /* バッファ */
 
 void execute_command(char *args[],    /* 引数の配列 */
                      int command_status,     /* コマンドの状態 */
-                     struct node **head)      //  スタックの先頭ポインタ
+                     struct node **head,      //  スタックの先頭ポインタ
+                     char array_history[COMMAX][BUFLEN],
+                     int number_cmd)
 {
     int pid;      /* プロセスID */
     int status;   /* 子プロセスの終了ステータス */
@@ -306,7 +326,16 @@ void execute_command(char *args[],    /* 引数の配列 */
         return;
     }
 
-
+    if(strcmp(args[0],"history")==0){
+        history(array_history, number_cmd) ;
+        return;
+    }
+    
+    if(args[0][0] == '!'){
+        precommand(args, head, array_history, number_cmd) ;
+        return;
+    }
+     
     /*
      *  外部コマンドの場合
      */
@@ -383,8 +412,27 @@ void wildcard (char *command_buffer) {
         strcpy(tmp, p);
         strcat(strcat(command_buffer, add),tmp);
     }
+    return;
+}
+
+void history (char array_history[COMMAX][BUFLEN], int number_cmd) {
+    int i;
     
-    printf("%s", command_buffer);
+    if (number_cmd < COMMAX) {
+        for(i=0; i < number_cmd; i++){
+            printf("[%d] > %s", i, array_history[i]);
+        }
+    }else {
+        int j;
+        i = number_cmd - COMMAX;
+        j = i;
+        for(i; i < COMMAX; i++){
+            printf("[%d] > %s", i+1, array_history[i]);
+        }
+        for(i=0; i < j; i++){
+            printf("[%d] > %s", i+COMMAX+1, array_history[i]);
+        }
+    }
     return;
 }
 
@@ -478,5 +526,98 @@ void cd (char *args[]) {
      free(post);
      return;
  }
- 
+/*----------------------------------------------------------------------------
+ *  !!/![string]機能の実装
+ *--------------------------------------------------------------------------*/
+
+void precommand (char *args[], struct node **head, char array_history[COMMAX][BUFLEN], int number_cmd) {
+    char cmd[BUFLEN];
+    int i;
+    int command_status;
+    
+    if(strcmp(args[0],"!!") == 0) {
+        if (number_cmd < COMMAX) {
+            if(array_history[number_cmd-2] != NULL){
+                strcpy(cmd, array_history[number_cmd-2]);
+                strcpy(array_history[number_cmd-1], cmd);
+            } else {
+                fprintf(stderr, "Command Not Found.\n");
+                return;
+            }
+        } else {
+            if((i = (number_cmd-1) % COMMAX) == 0){
+                strcpy(cmd, array_history[32]);
+                strcpy(array_history[number_cmd-1], cmd);
+            } else {
+                strcpy(cmd, array_history[i-1]);
+                strcpy(array_history[number_cmd-1], cmd);
+            }
+        }
+    } else {
+        if (number_cmd < COMMAX) {
+            for(i=number_cmd-2; 0<=i; i--){
+                if(strncmp(array_history[i], args[0]+1, strlen(args[0]+1))==0){
+                    strcpy(cmd, array_history[i]);
+                    strcpy(array_history[number_cmd-1], cmd);
+                    break;
+                }
+                if(i==0){
+                    fprintf(stderr,"Command Not Found.\n");
+                    return;
+                }
+            }
+        } else {
+            for(i=((number_cmd-2)%COMMAX); 0<=i; i--){
+                if(strncmp(array_history[i], args[0]+1, strlen(args[0]+1))==0){
+                    strcpy(cmd, array_history[i]);
+                    strcpy(array_history[number_cmd-1], cmd);
+                    break;
+                }
+                if(i==0){
+                    int j = (number_cmd-1)%COMMAX;
+                    int k;
+                    for(k=COMMAX; j<k; k--){
+                        if(strncmp(array_history[k], args[0]+1, strlen(args[0]+1))==0){
+                            strcpy(cmd, array_history[k]);
+                            strcpy(array_history[number_cmd-1], cmd);
+                            break;
+                        }
+                        if(k==j+1){
+                            fprintf(stderr,"Command Not Found.\n");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    /*
+     *  入力されたバッファ内のコマンドの解析
+     *
+     *  返り値はコマンドの状態
+     */
+
+    command_status = parse(cmd, args);
+
+    /*
+      終了コマンドならばプログラム終了
+     *  引数が何もなければプロンプト表示へ戻る
+     */
+
+    if(command_status == 2) {
+    printf("done.\n");
+        exit(EXIT_SUCCESS);
+    } else if(command_status == 3) {
+        return;
+    }
+
+    /*
+     *  コマンド実行
+     */
+
+     execute_command(args, command_status, head, array_history, number_cmd);
+
+    return;
+}
 /*-- END OF FILE -----------------------------------------------------------*/
