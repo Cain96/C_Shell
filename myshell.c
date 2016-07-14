@@ -265,6 +265,11 @@ void execute_command(char *args[],    /* 引数の配列 */
     /*
      *  内部コマンドの場合
      */
+     
+     if(strcmp(args[0],"prompt")==0){
+        prompt(args, pmt) ;
+        return;
+    }
 
     /*
      *  外部コマンドの場合
