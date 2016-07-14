@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
                                     command_status = 1 : バックグラウンドで実行
                                     command_status = 2 : シェルの終了
                                     command_status = 3 : 何もしない */
-    char pmt[256]="Command"
+    char pmt[256]="Command";    /* プロンプト */
 
     /*
      *  ̵無限ループ
@@ -258,7 +258,8 @@ int parse(char buffer[],        /* バッファ */
  *--------------------------------------------------------------------------*/
 
 void execute_command(char *args[],    /* 引数の配列 */
-                     int command_status)     /* コマンドの状態 */
+                     int command_status,     /* コマンドの状態 */
+                     char *pmt)     /* プロンプト */
 {
     int pid;      /* プロセスID */
     int status;   /* 子プロセスの終了ステータス */
