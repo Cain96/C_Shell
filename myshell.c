@@ -513,7 +513,7 @@ void cd (char *args[]) {
      post = *head;
      
      if(post==NULL) {
-         fprintf(stderr,"There is no in Dirstack");
+         fprintf(stderr,"There is no in Dirstack\n");
          return;
      }
      
