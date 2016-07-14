@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <dirent.h>
 
 /*
  *  定数の定義
@@ -39,6 +40,7 @@ void cd (char *[]);
 void pushd (struct node**);
 void dirs (struct node**);
 void popd (struct node**);
+void wildcard(char *);
 
 /*----------------------------------------------------------------------------
  *
@@ -86,7 +88,12 @@ int main(int argc, char *argv[])
             printf("\n");
             continue;
         }
-
+        
+       /*
+         *  wildcard検討
+         */
+         wildcard(command_buffer);
+         
         /*
          *  入力されたバッファ内のコマンドの解析
          *
@@ -348,6 +355,36 @@ void execute_command(char *args[],    /* 引数の配列 */
     /******** Your Program ********/
     wait(&status);
 
+    return;
+}
+
+/*
+*  wildcard機能の実装
+*/
+
+void wildcard (char *command_buffer) {
+    char *p;
+    char path[256], add[256]="", tmp[256]="";
+    DIR *dir;
+    struct dirent *dp;
+    
+    while((p = strstr(command_buffer, "*")) != NULL) {
+        getcwd(path,256);
+        dir = opendir(path);
+        for(dp=readdir(dir);dp!=NULL;dp=readdir(dir)){
+            if(dp -> d_type == 8){
+                strcat(strcat(add, dp->d_name)," ");
+            }
+        }
+        closedir(dir);
+        
+        *p = '\0';
+        p+=1;
+        strcpy(tmp, p);
+        strcat(strcat(command_buffer, add),tmp);
+    }
+    
+    printf("%s", command_buffer);
     return;
 }
 
