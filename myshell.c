@@ -281,6 +281,12 @@ void execute_command(char *args[],    /* 引数の配列 */
         alias(args, a_top) ;
         return;
     }
+    
+     if(strcmp(args[0],"unalias")==0){
+        unalias(args, a_top) ;
+        return;
+    }
+     
     /*
      *  外部コマンドの場合
      */
