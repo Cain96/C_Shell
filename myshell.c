@@ -331,4 +331,49 @@ void execute_command(char *args[],    /* 引数の配列 */
     return;
 }
 
+/*
+*  alias機能の実装
+*/
+
+void alias (char *args[], struct com **a_top){
+    struct com *now, *prev;
+    
+    now = *a_top;
+    if(args[1] == NULL){ //第二引数なし
+        if(now == NULL){
+            fprintf(stderr,"Not Found Alias List.\n");
+            return;
+        }else{
+            int i=1;
+            while(now != NULL){
+                printf("[%d]:%s => %s\n",i,now->command1,now->command2);
+                now = now->next;
+                i++;
+            }
+        }
+    }else{//第二引数あり
+        if(now == NULL){
+            now = (struct com *)malloc(sizeof(struct com));  //領域確保
+            *a_top = now;
+            strcpy(now->command1, args[1]);
+            strcpy(now->command2, args[2]);
+        }else{
+            while(now != NULL){
+                if(strcmp(now->command1, args[1])==0){
+                    fprintf(stderr, "It has been already added.\n");
+                    return;
+                }
+                prev = now;
+                now = now->next;
+            }
+            now = (struct com *)malloc(sizeof(struct com));  //領域確保
+            strcpy(now->command1, args[1]);
+            strcpy(now->command2, args[2]);
+            
+            prev->next = now;
+        }
+    }
+    return;
+}
+
 /*-- END OF FILE -----------------------------------------------------------*/
