@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
                                     command_status = 2 : シェルの終了
                                     command_status = 3 : 何もしない */
 
+    struct com *a_top;
     /*
      *  ̵無限ループ
      */
