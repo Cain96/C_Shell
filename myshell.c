@@ -34,7 +34,7 @@ struct com {
  */
 
 int parse(char [], char *[]);
-void execute_command(char *[], int);
+void execute_command(char *[], int, struct com **);
 
 /*----------------------------------------------------------------------------
  *
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
          *  コマンド実行
          */
 
-        execute_command(args, command_status);
+        execute_command(args, command_status, &a_top);
     }
 
     return 0;
@@ -266,7 +266,8 @@ int parse(char buffer[],        /* バッファ */
  *--------------------------------------------------------------------------*/
 
 void execute_command(char *args[],    /* 引数の配列 */
-                     int command_status)     /* コマンドの状態 */
+                     int command_status,     /* コマンドの状態 */
+                     struct com **a_top)   //aliasリスト
 {
     int pid;      /* プロセスID */
     int status;   /* 子プロセスの終了ステータス */
