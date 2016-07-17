@@ -105,7 +105,9 @@ int main(int argc, char *argv[])
         } else if(command_status == 3) {
             continue;
         }
-
+        
+        alias_replace(args, &a_top);//alias機能の検討
+        
         /*
          *  コマンド実行
          */
