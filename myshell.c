@@ -412,4 +412,21 @@ void unalias(char *args[], struct com **a_top){
     fprintf(stderr, "The alias command not found.\n");
     return;
 }
+
+/*
+*  alias_replace機能の実装
+*/
+void alias_replace(char *args[], struct com **a_top){
+    struct com *now;
+    
+    now = *a_top;
+    while(now != NULL){
+        if(strcmp(now->command1, args[0])==0){
+            strcpy(args[0], now->command2);
+            return;
+        }
+        now = now->next;
+    }
+    return;
+}
 /*-- END OF FILE -----------------------------------------------------------*/
