@@ -32,18 +32,30 @@ struct node {
 
 
 /*
+ *  構造体の定義
+ */
+struct com {
+    char command1[256];
+    char command2[256];
+    struct com *next;
+};
+
+/*
  * ローカルプロトタイプ宣言
  */
 
 int parse(char [], char *[]);
-void execute_command(char *[], int, struct node**, char [COMMAX][BUFLEN], int);
+void execute_command(char *[], int, struct node**, struct com**, char [COMMAX][BUFLEN], int);
 void cd (char *[]);
 void pushd (struct node**);
 void dirs (struct node**);
 void popd (struct node**);
 void wildcard(char *);
 void history(char array_history[COMMAX][BUFLEN], int);
-void precommand(char *[], struct node ** ,char array_history[COMMAX][BUFLEN], int);
+void precommand(char *[], struct node ** , struct com **,char array_history[COMMAX][BUFLEN], int);
+void alias(char *[], struct com **);
+void unalias(char *[], struct com **);
+void alias_replace(char *[], struct com **);
 
 /*----------------------------------------------------------------------------
  *
@@ -69,6 +81,7 @@ int main(int argc, char *argv[])
                                     command_status = 2 : シェルの終了
                                     command_status = 3 : 何もしない */
     struct node *head;
+    struct com *a_top;
     char array_history[COMMAX][BUFLEN]; /* ヒストリー用配列 */
     int number_cmd = 0;                  /* コマンド数 */
     int i;
@@ -131,14 +144,14 @@ int main(int argc, char *argv[])
         } else if(command_status == 3) {
             continue;
         }
-
+        
+        alias_replace(args, &a_top);//alias機能の検討
+        
         /*
          *  コマンド実行
          */
-
-        execute_command(args, command_status, &head, array_history, number_cmd);
+        execute_command(args, command_status, &head, &a_top, array_history, number_cmd);
     }
-
     return 0;
 }
 
@@ -297,6 +310,7 @@ int parse(char buffer[],        /* バッファ */
 void execute_command(char *args[],    /* 引数の配列 */
                      int command_status,     /* コマンドの状態 */
                      struct node **head,      //  スタックの先頭ポインタ
+                     struct com **a_top,   //aliasリスト
                      char array_history[COMMAX][BUFLEN],
                      int number_cmd)
 {
@@ -332,7 +346,16 @@ void execute_command(char *args[],    /* 引数の配列 */
     }
     
     if(args[0][0] == '!'){
-        precommand(args, head, array_history, number_cmd) ;
+        precommand(args, head, a_top,array_history, number_cmd) ;
+        return;
+    }
+    if(strcmp(args[0],"alias")==0){
+        alias(args, a_top) ;
+        return;
+    }
+    
+    if(strcmp(args[0],"unalias")==0){
+        unalias(args, a_top) ;
         return;
     }
      
@@ -387,9 +410,9 @@ void execute_command(char *args[],    /* 引数の配列 */
     return;
 }
 
-/*
+/*--------------------------------------------------------------------------*
 *  wildcard機能の実装
-*/
+*--------------------------------------------------------------------------*/
 
 void wildcard (char *command_buffer) {
     char *p;
@@ -431,6 +454,50 @@ void history (char array_history[COMMAX][BUFLEN], int number_cmd) {
         }
         for(i=0; i < j; i++){
             printf("[%d] > %s", i+COMMAX+1, array_history[i]);
+        }
+    }
+    return;
+}
+
+/*----------------------------------------------------------------------------
+*  alias機能の実装
+*--------------------------------------------------------------------------*/
+void alias (char *args[], struct com **a_top){
+    struct com *now, *prev;
+    
+    now = *a_top;
+    if(args[1] == NULL){ //第二引数なし
+        if(now == NULL){
+            fprintf(stderr,"Not Found Alias List.\n");
+            return;
+        }else{
+            int i=1;
+            while(now != NULL){
+                printf("[%d]:%s => %s\n",i,now->command1,now->command2);
+                now = now->next;
+                i++;
+            }
+        }
+    }else{//第二引数あり
+        if(now == NULL){
+            now = (struct com *)malloc(sizeof(struct com));  //領域確保
+            *a_top = now;
+            strcpy(now->command1, args[1]);
+            strcpy(now->command2, args[2]);
+        }else{
+            while(now != NULL){
+                if(strcmp(now->command1, args[1])==0){
+                    fprintf(stderr, "It has been already added.\n");
+                    return;
+                }
+                prev = now;
+                now = now->next;
+            }
+            now = (struct com *)malloc(sizeof(struct com));  //領域確保
+            strcpy(now->command1, args[1]);
+            strcpy(now->command2, args[2]);
+            
+            prev->next = now;
         }
     }
     return;
@@ -530,7 +597,7 @@ void cd (char *args[]) {
  *  !!/![string]機能の実装
  *--------------------------------------------------------------------------*/
 
-void precommand (char *args[], struct node **head, char array_history[COMMAX][BUFLEN], int number_cmd) {
+void precommand (char *args[], struct node **head, struct com **a_top,char array_history[COMMAX][BUFLEN], int number_cmd) {
     char cmd[BUFLEN];
     int i;
     int command_status;
@@ -615,9 +682,50 @@ void precommand (char *args[], struct node **head, char array_history[COMMAX][BU
     /*
      *  コマンド実行
      */
+     execute_command(args, command_status, head, a_top, array_history, number_cmd);
+    return;
+}
+/*--------------------------------------------------------------------------*
+*  unalias機能の実装
+ *--------------------------------------------------------------------------*/
+void unalias(char *args[], struct com **a_top){
+    struct com *now, *prev;
+    
+    now = *a_top;
+    if(strcmp(now->command1, args[1])==0){
+        *a_top = now->next;
+        free(now);
+        return;
+    }
+    prev = now;
+    now = now->next;
+    while(now != NULL){
+        if(strcmp(now->command1, args[1])==0){
+            prev -> next = now -> next;
+            free(now);
+            return;
+        }
+        prev = now;
+        now = now->next;
+    }
+    fprintf(stderr, "The alias command not found.\n");
+    return;
+}
 
-     execute_command(args, command_status, head, array_history, number_cmd);
-
+/*--------------------------------------------------------------------------*
+*  alias_replace機能の実装
+ *--------------------------------------------------------------------------*/
+void alias_replace(char *args[], struct com **a_top){
+    struct com *now;
+    
+    now = *a_top;
+    while(now != NULL){
+        if(strcmp(now->command1, args[0])==0){
+            strcpy(args[0], now->command2);
+            return;
+        }
+        now = now->next;
+    }
     return;
 }
 /*-- END OF FILE -----------------------------------------------------------*/
