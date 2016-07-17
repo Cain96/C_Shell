@@ -1,8 +1,4 @@
-﻿/*----------------------------------------------------------------------------
- *  簡易版シェル
- *--------------------------------------------------------------------------*/
-
-/*
+﻿/*
  *  インクルードファイル
  */
 
@@ -30,10 +26,6 @@ struct node {
     struct node *next;
 };
 
-
-/*
- *  構造体の定義
- */
 struct com {
     char command1[256];
     char command2[256];
@@ -59,19 +51,8 @@ void alias_replace(char *[], struct com **);
 void prompt(char *[], char *);
 
 /*----------------------------------------------------------------------------
- *
- *  関数名̾   : main
- *
- *  作業内容 : シェルのプロンプトを実現
- *
- *  引数     :
- *
- *  返り値   :
- *
- *  注意     :
- *
+ *シェルのプロンプトを実現
  *--------------------------------------------------------------------------*/
-
 int main(int argc, char *argv[])
 {
     char command_buffer[BUFLEN]; /* コマンド用のバッファ */
@@ -91,24 +72,18 @@ int main(int argc, char *argv[])
     for(i=0; i < COMMAX; i++){
         strcpy(array_history[i], "\0");
     }
-
     /*
      *  ̵無限ループ
      */
-
     for(;;) {
-        
-        /*
+       /*
          *  プロンプト表示
          */
-
         printf("%s : ",pmt);
-
-        /*
+       /*
          *  標準出力から1行を command_buffer へ読み込む
          *  入力が何もなければ改行を出力してプロンプト表示へ戻る
          */
-
         if(fgets(command_buffer, BUFLEN, stdin) == NULL) {
             exit(EXIT_SUCCESS);
         } else if(*command_buffer != '\n') {
@@ -126,27 +101,22 @@ int main(int argc, char *argv[])
          */
          wildcard(command_buffer);
          
-        /*
+       /*
          *  入力されたバッファ内のコマンドの解析
          *
          *  返り値はコマンドの状態
          */
-
         command_status = parse(command_buffer, args);
-
         /*
          *  終了コマンドならばプログラム終了
          *  引数が何もなければプロンプト表示へ戻る
          */
-
         if(command_status == 2) {
             printf("done.\n");
             exit(EXIT_SUCCESS);
         } else if(command_status == 3) {
             continue;
         }
-        
-        
         /*
          *  コマンド実行
          */
@@ -154,25 +124,14 @@ int main(int argc, char *argv[])
     }
     return 0;
 }
-
 /*----------------------------------------------------------------------------
- *
- *  関数名̾   : parse
- *
- *  作業内容 : バッファ内のコマンドと引数を解析
- *
- *  引数     :
- *
+ * バッファ内のコマンドと引数を解析
  *  返り値   : コマンドの状態を表す
                                     0 : フォアグラウンドで実行
                                     1 : バックグラウンドで実行
                                     2 : シェルの終了
                                     3 : 何もしない 
- *
- *  注意     :
- *
  *--------------------------------------------------------------------------*/
-
 int parse(char buffer[],        /* バッファ */
           char *args[])         /* 引数へのポインタ配列 */
 {
@@ -198,7 +157,6 @@ int parse(char buffer[],        /* バッファ */
      */
 
     if(strcmp(buffer, "exit") == 0) {
-
         status = 2;
         return status;
     }
@@ -214,7 +172,6 @@ int parse(char buffer[],        /* バッファ */
          *  空白類(空白とタブ)をヌル文字に置き換える
          *  これによってバッファ内の各引数が分割される
          */
-
         while(*buffer == ' ' || *buffer == '\t') {
             *(buffer++) = '\0';
         }
@@ -241,7 +198,6 @@ int parse(char buffer[],        /* バッファ */
          *  引数部分を読み飛ばす
          *  (ヌル文字でも空白類でもない場合に読み進める)
          */
-
         while((*buffer != '\0') && (*buffer != ' ') && (*buffer != '\t')) {
             ++buffer;
         }
@@ -250,7 +206,6 @@ int parse(char buffer[],        /* バッファ */
     /*
      *  最後の引数の次にはヌルへのポインタを格納する。
      */
-
     args[arg_index] = NULL;
 
     /*
@@ -263,15 +218,11 @@ int parse(char buffer[],        /* バッファ */
      */
 
     if(arg_index > 0 && strcmp(args[arg_index - 1], "&") == 0) {
-
         --arg_index;
         args[arg_index] = '\0';
         status = 1;
-
     } else {
-
         status = 0;
-
     }
 
     /*
@@ -285,26 +236,15 @@ int parse(char buffer[],        /* バッファ */
     /*
      *  コマンドの状態を返す
      */
-
     return status;
 }
 
 /*----------------------------------------------------------------------------
- *
- *  関数名̾   : excute_command
- *
  *  作業内容 : 引数として与えられたコマンドを実行する
               コマンドの状態がフォアグラウンドならば、コマンドを
               実行している子プロセスの終了を待つ
               バックグラウンドならば子プロセスの終了を待たずに
               main 関数に戻る(プロンプト表示に戻る)
- *
- *  引数     :
- *
- *  返り値   :
- *
- *  注意     :
- *
  *--------------------------------------------------------------------------*/
 
 void execute_command(char *args[],    /* 引数の配列 */
@@ -375,8 +315,6 @@ void execute_command(char *args[],    /* 引数の配列 */
      *
      *  生成できたかを確認し、失敗ならばプログラムを終了
      */
-
-    /******** Your Program ********/
     pid = fork();
     if (pid < 0) {
         perror("fork");
@@ -390,8 +328,6 @@ void execute_command(char *args[],    /* 引数の配列 */
      *  ・第一引数には実行されているプログラムを示す文字列が格納されている
      *  ・引数の配列はヌルポインタで終了している
      */
-
-    /******** Your Program ********/
     if(pid == 0){
         execvp(args[0], args);
         perror(args[0]);
@@ -402,7 +338,6 @@ void execute_command(char *args[],    /* 引数の配列 */
      *  コマンドの状態がバックグラウンドならば、関数を抜ける
      */
 
-    /******** Your Program ********/
     if (command_status == 1){
         return;
     }
@@ -412,7 +347,6 @@ void execute_command(char *args[],    /* 引数の配列 */
      *  親プロセスの場合に子プロセスの終了を待つ
      */
 
-    /******** Your Program ********/
     wait(&status);
 
     return;
@@ -446,6 +380,9 @@ void wildcard (char *command_buffer) {
     return;
 }
 
+/*--------------------------------------------------------------------------*
+*  history機能の実装
+*--------------------------------------------------------------------------*/
 void history (char array_history[COMMAX][BUFLEN], int number_cmd) {
     int i;
     
@@ -678,27 +615,22 @@ void precommand (char *args[], struct node **head, struct com **a_top,char array
             }
         }
     }
-    
     /*
      *  入力されたバッファ内のコマンドの解析
      *
      *  返り値はコマンドの状態
      */
-
     command_status = parse(cmd, args);
-
     /*
       終了コマンドならばプログラム終了
      *  引数が何もなければプロンプト表示へ戻る
      */
-
     if(command_status == 2) {
-    printf("done.\n");
+        printf("done.\n");
         exit(EXIT_SUCCESS);
     } else if(command_status == 3) {
         return;
     }
-
     /*
      *  コマンド実行
      */
