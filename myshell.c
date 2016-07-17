@@ -145,7 +145,6 @@ int main(int argc, char *argv[])
             continue;
         }
         
-        alias_replace(args, &a_top);//alias機能の検討
         
         /*
          *  コマンド実行
@@ -316,6 +315,8 @@ void execute_command(char *args[],    /* 引数の配列 */
 {
     int pid;      /* プロセスID */
     int status;   /* 子プロセスの終了ステータス */
+    
+    alias_replace(args, a_top);//alias機能の検討
     
     /*
      *  内部コマンドの場合
