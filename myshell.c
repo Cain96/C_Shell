@@ -108,8 +108,7 @@ int main(int argc, char *argv[])
          */
 
         if(fgets(command_buffer, BUFLEN, stdin) == NULL) {
-            printf("\n");
-            continue;
+            exit(EXIT_SUCCESS);
         } else if(*command_buffer != '\n') {
             if(number_cmd<32){
                 strcpy(array_history[number_cmd], command_buffer);
