@@ -45,17 +45,18 @@ struct com {
  */
 
 int parse(char [], char *[]);
-void execute_command(char *[], int, struct node**, struct com**, char [COMMAX][BUFLEN], int);
+void execute_command(char *[], int, struct node**, struct com**, char [COMMAX][BUFLEN], int, char *);
 void cd (char *[]);
 void pushd (struct node**);
 void dirs (struct node**);
 void popd (struct node**);
 void wildcard(char *);
 void history(char array_history[COMMAX][BUFLEN], int);
-void precommand(char *[], struct node ** , struct com **,char array_history[COMMAX][BUFLEN], int);
+void precommand(char *[], struct node ** , struct com **,char array_history[COMMAX][BUFLEN], int, char *);
 void alias(char *[], struct com **);
 void unalias(char *[], struct com **);
 void alias_replace(char *[], struct com **);
+void prompt(char *[], char *);
 
 /*----------------------------------------------------------------------------
  *
@@ -85,11 +86,12 @@ int main(int argc, char *argv[])
     char array_history[COMMAX][BUFLEN]; /* ヒストリー用配列 */
     int number_cmd = 0;                  /* コマンド数 */
     int i;
+    char pmt[256]="Command";    /* プロンプト */
     
     for(i=0; i < COMMAX; i++){
         strcpy(array_history[i], "\0");
     }
-    
+
     /*
      *  ̵無限ループ
      */
@@ -100,7 +102,7 @@ int main(int argc, char *argv[])
          *  プロンプト表示
          */
 
-        printf("Command : ");
+        printf("%s : ",pmt);
 
         /*
          *  標準出力から1行を command_buffer へ読み込む
@@ -148,7 +150,7 @@ int main(int argc, char *argv[])
         /*
          *  コマンド実行
          */
-        execute_command(args, command_status, &head, &a_top, array_history, number_cmd);
+        execute_command(args, command_status, &head, &a_top, array_history, number_cmd, pmt);
     }
     return 0;
 }
@@ -310,7 +312,8 @@ void execute_command(char *args[],    /* 引数の配列 */
                      struct node **head,      //  スタックの先頭ポインタ
                      struct com **a_top,   //aliasリスト
                      char array_history[COMMAX][BUFLEN],
-                     int number_cmd)
+                     int number_cmd,
+                     char *pmt)     /* プロンプト */
 {
     int pid;      /* プロセスID */
     int status;   /* 子プロセスの終了ステータス */
@@ -339,6 +342,11 @@ void execute_command(char *args[],    /* 引数の配列 */
         popd(head);
         return;
     }
+     
+     if(strcmp(args[0],"prompt")==0){
+        prompt(args, pmt) ;
+        return;
+    }
 
     if(strcmp(args[0],"history")==0){
         history(array_history, number_cmd) ;
@@ -346,7 +354,7 @@ void execute_command(char *args[],    /* 引数の配列 */
     }
     
     if(args[0][0] == '!'){
-        precommand(args, head, a_top,array_history, number_cmd) ;
+        precommand(args, head, a_top,array_history, number_cmd, pmt) ;
         return;
     }
     if(strcmp(args[0],"alias")==0){
@@ -532,6 +540,18 @@ void cd (char *args[]) {
 }
 
 /*----------------------------------------------------------------------------
+ *  prompt機能の実装
+ *--------------------------------------------------------------------------*/
+void prompt(char *args[],char *pmt){
+    if(args[1] == NULL){
+        fprintf(stderr, "Input for prompt name.\n");
+    }else{
+        strcpy(pmt, args[1]);
+    }
+    return;
+}
+
+/*----------------------------------------------------------------------------
  *  pushd機能の実装
  *--------------------------------------------------------------------------*/
  void pushd(struct node **head){
@@ -593,11 +613,11 @@ void cd (char *args[]) {
      free(post);
      return;
  }
+ 
 /*----------------------------------------------------------------------------
  *  !!/![string]機能の実装
  *--------------------------------------------------------------------------*/
-
-void precommand (char *args[], struct node **head, struct com **a_top,char array_history[COMMAX][BUFLEN], int number_cmd) {
+void precommand (char *args[], struct node **head, struct com **a_top,char array_history[COMMAX][BUFLEN], int number_cmd, char *pmt) {
     char cmd[BUFLEN];
     int i;
     int command_status;
@@ -682,9 +702,10 @@ void precommand (char *args[], struct node **head, struct com **a_top,char array
     /*
      *  コマンド実行
      */
-     execute_command(args, command_status, head, a_top, array_history, number_cmd);
+     execute_command(args, command_status, head, a_top, array_history, number_cmd, pmt);
     return;
 }
+
 /*--------------------------------------------------------------------------*
 *  unalias機能の実装
  *--------------------------------------------------------------------------*/
