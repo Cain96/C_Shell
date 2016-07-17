@@ -36,6 +36,7 @@ struct com {
 int parse(char [], char *[]);
 void execute_command(char *[], int, struct com **);
 void alias(char *[], struct com **);
+void unalias(char *[], struct com **);
 
 /*----------------------------------------------------------------------------
  *
