@@ -544,7 +544,7 @@ void cd (char *args[]) {
  *--------------------------------------------------------------------------*/
 void prompt(char *args[],char *pmt){
     if(args[1] == NULL){
-        fprintf(stderr, "Input for prompt name.\n");
+        strcpy(pmt, "prompt");
     }else{
         strcpy(pmt, args[1]);
     }
