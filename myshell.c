@@ -383,4 +383,30 @@ void alias (char *args[], struct com **a_top){
     return;
 }
 
+/*
+*  unalias機能の実装
+*/
+void unalias(char *args[], struct com **a_top){
+    struct com *now, *prev;
+    
+    now = *a_top;
+    if(strcmp(now->command1, args[1])==0){
+        *a_top = now->next;
+        free(now);
+        return;
+    }
+    prev = now;
+    now = now->next;
+    while(now != NULL){
+        if(strcmp(now->command1, args[1])==0){
+            prev -> next = now -> next;
+            free(now);
+            return;
+        }
+        prev = now;
+        now = now->next;
+    }
+    fprintf(stderr, "The alias command not found.\n");
+    return;
+}
 /*-- END OF FILE -----------------------------------------------------------*/
