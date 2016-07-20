@@ -55,7 +55,8 @@ void alias(char *[], struct com **);
 void unalias(char *[], struct com **);
 void alias_replace(char *[], struct com **);
 void prompt(char *[], char *);
-
+void n_free(struct node*);
+void c_free(struct com*);
 /*----------------------------------------------------------------------------
  *シェルのプロンプトを実現
  *--------------------------------------------------------------------------*/
@@ -91,6 +92,8 @@ int main(int argc, char *argv[])
          *  入力が何もなければ改行を出力してプロンプト表示へ戻る
          */
         if(fgets(command_buffer, BUFLEN, stdin) == NULL) {
+            n_free(head);
+            c_free(a_top);
             exit(EXIT_SUCCESS);
         } else if(*command_buffer != '\n') {
             if(number_cmd<32){
@@ -119,6 +122,8 @@ int main(int argc, char *argv[])
          */
         if(command_status == 2) {
             printf("done.\n");
+            n_free(head);
+            c_free(a_top);
             exit(EXIT_SUCCESS);
         } else if(command_status == 3) {
             continue;
@@ -726,4 +731,30 @@ void alias_replace(char *args[], struct com **a_top){
     }
     return;
 }
+
+/*--------------------------------------------------------------------------*
+*  n_freeの実装
+ *--------------------------------------------------------------------------*/
+ void n_free(struct node *now){
+     if(now == NULL){
+         return;
+     }else{
+         n_free(now->next);
+     }
+     free(now);
+     return;
+ }
+ /*--------------------------------------------------------------------------*
+*  c_freeの実装
+ *--------------------------------------------------------------------------*/
+  void c_free(struct com *now){
+     if(now == NULL){
+         return;
+     }else{
+         n_free(now->next);
+     }
+     free(now);
+     return;
+ }
+ 
 /*-- END OF FILE -----------------------------------------------------------*/
