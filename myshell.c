@@ -50,7 +50,7 @@ void dirs (struct node**);
 void popd (struct node**);
 void wildcard(char *);
 void history(char array_history[COMMAX][BUFLEN], int);
-void precommand(char *[], struct node ** , struct com **,char array_history[COMMAX][BUFLEN], int, char *);
+void precommand(char *[], struct node ** , struct com **,char [COMMAX][BUFLEN], int, char *);
 void alias(char *[], struct com **);
 void unalias(char *[], struct com **);
 void alias_replace(char *[], struct com **);
@@ -238,6 +238,8 @@ int parse(char buffer[],        /* バッファ */
     if(arg_index == 0) {
         status = 3;
     }
+    
+    arg_number = arg_index--;
 
     /*
      *  コマンドの状態を返す
@@ -300,7 +302,7 @@ void execute_command(char *args[],    /* 引数の配列 */
     }
     
     if(args[0][0] == '!'){
-        precommand(args, head, a_top,array_history, number_cmd, pmt) ;
+        precommand(args, head, a_top, array_history, number_cmd, pmt) ;
         return;
     }
     if(strcmp(args[0],"alias")==0){
@@ -392,20 +394,24 @@ void wildcard (char *command_buffer) {
 void history (char array_history[COMMAX][BUFLEN], int number_cmd) {
     int i;
     
-    if (number_cmd < COMMAX) {
-        for(i=0; i < number_cmd; i++){
-            printf("[%d] > %s", i, array_history[i]);
+    if(arg_number == 1){
+        if (number_cmd < COMMAX) {
+            for(i=0; i < number_cmd; i++){
+                printf("[%d] > %s", i, array_history[i]);
+            }
+        }else {
+            int j;
+            i = number_cmd - COMMAX;
+            j = i;
+            for(i; i < COMMAX; i++){
+                printf("[%d] > %s", i+1, array_history[i]);
+            }
+            for(i=0; i < j; i++){
+                printf("[%d] > %s", i+COMMAX+1, array_history[i]);
+            }
         }
-    }else {
-        int j;
-        i = number_cmd - COMMAX;
-        j = i;
-        for(i; i < COMMAX; i++){
-            printf("[%d] > %s", i+1, array_history[i]);
-        }
-        for(i=0; i < j; i++){
-            printf("[%d] > %s", i+COMMAX+1, array_history[i]);
-        }
+    }else{
+        fprintf(stderr,"Irregal Arguments.\n");
     }
     return;
 }
@@ -416,40 +422,44 @@ void history (char array_history[COMMAX][BUFLEN], int number_cmd) {
 void alias (char *args[], struct com **a_top){
     struct com *now, *prev;
     
-    now = *a_top;
-    if(args[1] == NULL){ //第二引数なし
-        if(now == NULL){
-            fprintf(stderr,"Not Found Alias List.\n");
-            return;
-        }else{
-            int i=1;
-            while(now != NULL){
-                printf("[%d]:%s => %s\n",i,now->command1,now->command2);
-                now = now->next;
-                i++;
-            }
-        }
-    }else{//第二引数あり
-        if(now == NULL){
-            now = (struct com *)malloc(sizeof(struct com));  //領域確保
-            *a_top = now;
-            strcpy(now->command1, args[1]);
-            strcpy(now->command2, args[2]);
-        }else{
-            while(now != NULL){
-                if(strcmp(now->command1, args[1])==0){
-                    fprintf(stderr, "It has been already added.\n");
-                    return;
+    if(arg_number == 1|| arg_number == 3){
+        now = *a_top;
+        if(args[1] == NULL){ //第二引数なし
+            if(now == NULL){
+                fprintf(stderr,"Not Found Alias List.\n");
+                return;
+            }else{
+                int i=1;
+                while(now != NULL){
+                    printf("[%d]:%s => %s\n",i,now->command1,now->command2);
+                    now = now->next;
+                    i++;
                 }
-                prev = now;
-                now = now->next;
             }
-            now = (struct com *)malloc(sizeof(struct com));  //領域確保
-            strcpy(now->command1, args[1]);
-            strcpy(now->command2, args[2]);
-            
-            prev->next = now;
+        }else{//第二引数あり
+            if(now == NULL){
+                now = (struct com *)malloc(sizeof(struct com));  //領域確保
+                *a_top = now;
+                strcpy(now->command1, args[1]);
+                strcpy(now->command2, args[2]);
+            }else{
+                while(now != NULL){
+                    if(strcmp(now->command1, args[1])==0){
+                        fprintf(stderr, "It has been already added.\n");
+                        return;
+                    }
+                    prev = now;
+                    now = now->next;
+                }
+                now = (struct com *)malloc(sizeof(struct com));  //領域確保
+                strcpy(now->command1, args[1]);
+                strcpy(now->command2, args[2]);
+                
+                prev->next = now;
+            }
         }
+    }else{
+        fprintf(stderr,"Irregal Arguments.\n");
     }
     return;
 }
@@ -461,23 +471,28 @@ void cd (char *args[]) {
     char current_dir[256];
     char *path;
     
-    if(args[1] == NULL) {    //引数なしの時
-        path = getenv("HOME");
-    } else {    //引数ありの時
-        if(args[1][0] == '/') {      //絶対パスの時
-            path = args[1];
-        }else {     //相対パスの時
-            getcwd(current_dir, 256);   //カレントディレクトリの取得
-            if(strcmp(current_dir,"/")!=0){
-                path = strcat(current_dir, "/");
-                path = strcat(path, args[1]);
-            }else{
-                path = strcat(current_dir, args[1]);
+    
+    if(arg_number < 3){
+        if(args[1] == NULL) {    //引数なしの時
+            path = getenv("HOME");
+        } else {    //引数ありの時
+            if(args[1][0] == '/') {      //絶対パスの時
+                path = args[1];
+            }else {     //相対パスの時
+                getcwd(current_dir, 256);   //カレントディレクトリの取得
+                if(strcmp(current_dir,"/")!=0){
+                    path = strcat(current_dir, "/");
+                    path = strcat(path, args[1]);
+                }else{
+                    path = strcat(current_dir, args[1]);
+                }
             }
         }
-    }
-    if(path != NULL && chdir(path) == -1){
-        fprintf(stderr,"%s is irregal path.\n",&path);
+        if(path != NULL && chdir(path) == -1){
+            fprintf(stderr,"%s is irregal path.\n",path);
+        }
+    }else{
+        fprintf(stderr,"Irregal Arguments.\n");
     }
     return;
 }
@@ -486,10 +501,14 @@ void cd (char *args[]) {
  *  prompt機能の実装
  *--------------------------------------------------------------------------*/
 void prompt(char *args[],char *pmt){
-    if(args[1] == NULL){
-        strcpy(pmt, "prompt");
+    if(arg_number < 3){
+        if(args[1] == NULL){
+            strcpy(pmt, "prompt");
+        }else{
+            strcpy(pmt, args[1]);
+        }
     }else{
-        strcpy(pmt, args[1]);
+        fprintf(stderr,"Irregal Arguments.\n");
     }
     return;
 }
@@ -500,15 +519,18 @@ void prompt(char *args[],char *pmt){
  void pushd(struct node **head){
      struct node *new;
      
-     new = (struct node *)malloc(sizeof(struct node));  //領域確保
-     new -> next = *head;
+     if(arg_number == 1){
+        new = (struct node *)malloc(sizeof(struct node));  //領域確保
+        new -> next = *head;
      
-     if(getcwd(new->path, 256) == NULL){    //エラー時処理
-         fprintf(stderr,"pushd Failure\n");
-         return;
-     }
-     
-     *head = new;
+        if(getcwd(new->path, 256) == NULL){    //エラー時処理
+            fprintf(stderr,"pushd Failure\n");
+            return;
+        }
+        *head = new;
+    }else{
+        fprintf(stderr,"Irregal Arguments.\n");
+    }
      return;
  }
  
@@ -519,18 +541,22 @@ void prompt(char *args[],char *pmt){
      int i=0;
      struct node *new;
      
-     if(head == NULL) {
-         fprintf(stderr,"There is no in Dirstack");
-         return;
-     }
+     if(arg_number == 1){
+        if(head == NULL) {
+            fprintf(stderr,"There is no in Dirstack");
+            return;
+        }
      
-     new = *head;
+        new = *head;
      
-     while (new != NULL) {
-         i++;
-         printf("%d : %s\n", i, new->path);
-         new = new -> next;
-     }
+        while (new != NULL) {
+            i++;
+            printf("%d : %s\n", i, new->path);
+            new = new -> next;
+        }
+    }else{
+        fprintf(stderr,"Irregal Arguments.\n");
+    }
      return;
  }
  
@@ -540,20 +566,25 @@ void prompt(char *args[],char *pmt){
  void popd(struct node **head) {
      struct node *post;
      
-     post = *head;
+     if(arg_number == 1){
+        post = *head;
      
-     if(post==NULL) {
-         fprintf(stderr,"There is no in Dirstack\n");
-         return;
-     }
+        if(post==NULL) {
+            fprintf(stderr,"There is no in Dirstack\n");
+            return;
+        }
      
-     if(post->path!=NULL && chdir(post->path)==-1){
-         fprintf(stderr,"popd Failure\n");
-         return;
-     }
+        if(post->path!=NULL && chdir(post->path)==-1){
+            fprintf(stderr,"popd Failure\n");
+            return;
+        }
      
-     *head = post -> next;
-     free(post);
+        *head = post -> next;
+        free(post);
+     
+     }else{
+        fprintf(stderr,"Irregal Arguments.\n");
+    }
      return;
  }
  
@@ -565,82 +596,86 @@ void precommand (char *args[], struct node **head, struct com **a_top,char array
     int i;
     int command_status;
     
-    if(strcmp(args[0],"!!") == 0) {
-        if (number_cmd < COMMAX) {
-            if(strcmp(array_history[number_cmd-2],"\0")!=0){
-                strcpy(cmd, array_history[number_cmd-2]);
-                strcpy(array_history[number_cmd-1], cmd);
-            } else {
-                fprintf(stderr, "Command Not Found.\n");
-                return;
-            }
-        } else {
-            if((i = (number_cmd-1) % COMMAX) == 0){
-                strcpy(cmd, array_history[32]);
-                strcpy(array_history[number_cmd-1], cmd);
-            } else {
-                strcpy(cmd, array_history[i-1]);
-                strcpy(array_history[number_cmd-1], cmd);
-            }
-        }
-    } else {
-        if (number_cmd < COMMAX) {
-            for(i=number_cmd-2; 0<=i; i--){
-                if(strncmp(array_history[i], args[0]+1, strlen(args[0]+1))==0){
-                    strcpy(cmd, array_history[i]);
+    if(arg_number == 1){
+        if(strcmp(args[0],"!!") == 0) {
+            if (number_cmd < COMMAX) {
+                if(strcmp(array_history[number_cmd-2],"\0")!=0){
+                    strcpy(cmd, array_history[number_cmd-2]);
                     strcpy(array_history[number_cmd-1], cmd);
-                    break;
-                }
-                if(i==0){
-                    fprintf(stderr,"Command Not Found.\n");
+                } else {
+                    fprintf(stderr, "Command Not Found.\n");
                     return;
                 }
+            } else {
+                if((i = (number_cmd-1) % COMMAX) == 0){
+                    strcpy(cmd, array_history[32]);
+                    strcpy(array_history[number_cmd-1], cmd);
+                } else {
+                    strcpy(cmd, array_history[i-1]);
+                    strcpy(array_history[number_cmd-1], cmd);
+                }
             }
         } else {
-            for(i=((number_cmd-2)%COMMAX); 0<=i; i--){
-                if(strncmp(array_history[i], args[0]+1, strlen(args[0]+1))==0){
-                    strcpy(cmd, array_history[i]);
-                    strcpy(array_history[number_cmd-1], cmd);
-                    break;
+            if (number_cmd < COMMAX) {
+                for(i=number_cmd-2; 0<=i; i--){
+                    if(strncmp(array_history[i], args[0]+1, strlen(args[0]+1))==0){
+                        strcpy(cmd, array_history[i]);
+                        strcpy(array_history[number_cmd-1], cmd);
+                        break;
+                    }
+                    if(i==0){
+                        fprintf(stderr,"Command Not Found.\n");
+                        return;
+                    }
                 }
-                if(i==0){
-                    int j = (number_cmd-1)%COMMAX;
-                    int k;
-                    for(k=COMMAX; j<k; k--){
-                        if(strncmp(array_history[k], args[0]+1, strlen(args[0]+1))==0){
-                            strcpy(cmd, array_history[k]);
-                            strcpy(array_history[number_cmd-1], cmd);
-                            break;
-                        }
-                        if(k==j+1){
-                            fprintf(stderr,"Command Not Found.\n");
-                            return;
+            } else {
+                for(i=((number_cmd-2)%COMMAX); 0<=i; i--){
+                    if(strncmp(array_history[i], args[0]+1, strlen(args[0]+1))==0){
+                        strcpy(cmd, array_history[i]);
+                        strcpy(array_history[number_cmd-1], cmd);
+                        break;
+                    }
+                    if(i==0){
+                        int j = (number_cmd-1)%COMMAX;
+                        int k;
+                        for(k=COMMAX; j<k; k--){
+                            if(strncmp(array_history[k], args[0]+1, strlen(args[0]+1))==0){
+                                strcpy(cmd, array_history[k]);
+                                strcpy(array_history[number_cmd-1], cmd);
+                                break;
+                            }
+                            if(k==j+1){
+                                fprintf(stderr,"Command Not Found.\n");
+                                return;
+                            }
                         }
                     }
                 }
             }
         }
+        /*
+            *  入力されたバッファ内のコマンドの解析
+            *
+            *  返り値はコマンドの状態
+            */
+        command_status = parse(cmd, args);
+            /*
+            終了コマンドならばプログラム終了
+            *  引数が何もなければプロンプト表示へ戻る
+            */
+        if(command_status == 2) {
+            printf("done.\n");
+            exit(EXIT_SUCCESS);
+        } else if(command_status == 3) {
+            return;
+        }
+        /*
+            *  コマンド実行
+            */
+        execute_command(args, command_status, head, a_top, array_history, number_cmd, pmt);
+     }else{
+        fprintf(stderr,"Irregal Arguments.\n");
     }
-    /*
-     *  入力されたバッファ内のコマンドの解析
-     *
-     *  返り値はコマンドの状態
-     */
-    command_status = parse(cmd, args);
-    /*
-      終了コマンドならばプログラム終了
-     *  引数が何もなければプロンプト表示へ戻る
-     */
-    if(command_status == 2) {
-        printf("done.\n");
-        exit(EXIT_SUCCESS);
-    } else if(command_status == 3) {
-        return;
-    }
-    /*
-     *  コマンド実行
-     */
-     execute_command(args, command_status, head, a_top, array_history, number_cmd, pmt);
     return;
 }
 
@@ -650,24 +685,28 @@ void precommand (char *args[], struct node **head, struct com **a_top,char array
 void unalias(char *args[], struct com **a_top){
     struct com *now, *prev;
     
-    now = *a_top;
-    if(strcmp(now->command1, args[1])==0){
-        *a_top = now->next;
-        free(now);
-        return;
-    }
-    prev = now;
-    now = now->next;
-    while(now != NULL){
+    if(arg_number == 2){
+        now = *a_top;
         if(strcmp(now->command1, args[1])==0){
-            prev -> next = now -> next;
+            *a_top = now->next;
             free(now);
             return;
         }
         prev = now;
         now = now->next;
+        while(now != NULL){
+            if(strcmp(now->command1, args[1])==0){
+                prev -> next = now -> next;
+                free(now);
+                return;
+            }
+            prev = now;
+            now = now->next;
+        }
+        fprintf(stderr, "The alias command not found.\n");
+    }else{
+        fprintf(stderr,"Irregal Arguments.\n");
     }
-    fprintf(stderr, "The alias command not found.\n");
     return;
 }
 
