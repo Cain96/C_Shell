@@ -53,7 +53,7 @@ void history(char array_history[COMMAX][BUFLEN], int);
 void precommand(char *[], struct node ** , struct com **,char [COMMAX][BUFLEN], int, char *);
 void alias(char *[], struct com **);
 void unalias(char *[], struct com **);
-void alias_replace(char *[], struct com **);
+void alias_replace(char *[], struct com **, char[]);
 void prompt(char *[], char *);
 void n_free(struct node*);
 void c_free(struct com*);
@@ -128,6 +128,8 @@ int main(int argc, char *argv[])
         } else if(command_status == 3) {
             continue;
         }
+        
+        alias_replace(args, &a_top, command_buffer);//alias機能の検討
         /*
          *  コマンド実行
          */
@@ -271,7 +273,6 @@ void execute_command(char *args[],    /* 引数の配列 */
     int pid;      /* プロセスID */
     int status;   /* 子プロセスの終了ステータス */
     
-    alias_replace(args, a_top);//alias機能の検討
     
     /*
      *  内部コマンドの場合
@@ -390,6 +391,7 @@ void wildcard (char *command_buffer) {
         strcpy(tmp, p);
         strcat(strcat(command_buffer, add),tmp);
     }
+    printf("%s\n",command_buffer);
     return;
 }
 
@@ -402,17 +404,19 @@ void history (char array_history[COMMAX][BUFLEN], int number_cmd) {
     if(arg_number == 1){
         if (number_cmd < COMMAX) {
             for(i=0; i < number_cmd; i++){
-                printf("[%d] > %s", i, array_history[i]);
-            }
-        }else {
-            int j;
-            i = number_cmd - COMMAX;
-            j = i;
-            for(i; i < COMMAX; i++){
                 printf("[%d] > %s", i+1, array_history[i]);
             }
+        }else {
+            int j,k;
+            i = number_cmd % COMMAX;
+            k = number_cmd / COMMAX;
+            j = i;
+            printf("%d, %d\n",i,k);
+            for(i; i < COMMAX; i++){
+                printf("[%d] > %s", i+(COMMAX*(k-1))+1, array_history[i]);
+            }
             for(i=0; i < j; i++){
-                printf("[%d] > %s", i+COMMAX+1, array_history[i]);
+                printf("[%d] > %s", i+(COMMAX*k)+1, array_history[i]);
             }
         }
     }else{
@@ -427,7 +431,7 @@ void history (char array_history[COMMAX][BUFLEN], int number_cmd) {
 void alias (char *args[], struct com **a_top){
     struct com *now, *prev;
     
-    if(arg_number == 1|| arg_number == 3){
+    if(arg_number != 2){
         now = *a_top;
         if(args[1] == NULL){ //第二引数なし
             if(now == NULL){
@@ -446,7 +450,16 @@ void alias (char *args[], struct com **a_top){
                 now = (struct com *)malloc(sizeof(struct com));  //領域確保
                 *a_top = now;
                 strcpy(now->command1, args[1]);
-                strcpy(now->command2, args[2]);
+                
+                char command[256];
+                strcpy(command, args[2]);
+                
+                int x=3;
+                while(args[x]!=NULL){
+                    strcat(strcat(command, " "), args[x]);
+                    x++;
+                }
+                strcpy(now->command2, command);
             }else{
                 while(now != NULL){
                     if(strcmp(now->command1, args[1])==0){
@@ -458,7 +471,15 @@ void alias (char *args[], struct com **a_top){
                 }
                 now = (struct com *)malloc(sizeof(struct com));  //領域確保
                 strcpy(now->command1, args[1]);
-                strcpy(now->command2, args[2]);
+                char command[256];
+                strcpy(command, args[2]);
+                
+                int x=3;
+                while(args[x]!=NULL){
+                    strcat(strcat(command, " "), args[x]);
+                    x++;
+                }
+                strcpy(now->command2, command);
                 
                 prev->next = now;
             }
@@ -608,6 +629,7 @@ void precommand (char *args[], struct node **head, struct com **a_top,char array
                     strcpy(cmd, array_history[number_cmd-2]);
                     strcpy(array_history[number_cmd-1], cmd);
                 } else {
+                    number_cmd++;
                     fprintf(stderr, "Command Not Found.\n");
                     return;
                 }
@@ -629,6 +651,7 @@ void precommand (char *args[], struct node **head, struct com **a_top,char array
                         break;
                     }
                     if(i==0){
+                        number_cmd++;
                         fprintf(stderr,"Command Not Found.\n");
                         return;
                     }
@@ -650,6 +673,7 @@ void precommand (char *args[], struct node **head, struct com **a_top,char array
                                 break;
                             }
                             if(k==j+1){
+                                number_cmd++;
                                 fprintf(stderr,"Command Not Found.\n");
                                 return;
                             }
@@ -658,6 +682,7 @@ void precommand (char *args[], struct node **head, struct com **a_top,char array
                 }
             }
         }
+        number_cmd++;
         /*
             *  入力されたバッファ内のコマンドの解析
             *
@@ -718,13 +743,20 @@ void unalias(char *args[], struct com **a_top){
 /*--------------------------------------------------------------------------*
 *  alias_replace機能の実装
  *--------------------------------------------------------------------------*/
-void alias_replace(char *args[], struct com **a_top){
+void alias_replace(char *args[], struct com **a_top, char buffer[]){
     struct com *now;
+    char *p;
+    char tmp[256]="";
     
     now = *a_top;
     while(now != NULL){
         if(strcmp(now->command1, args[0])==0){
-            strcpy(args[0], now->command2);
+            p = strstr(buffer, now->command1);
+            *p = '\0';
+            p+=1;
+            strcpy(tmp, p);
+            strcat(strcat(buffer, now->command2),tmp);
+            parse(buffer, args);
             return;
         }
         now = now->next;
@@ -751,7 +783,7 @@ void alias_replace(char *args[], struct com **a_top){
      if(now == NULL){
          return;
      }else{
-         n_free(now->next);
+         c_free(now->next);
      }
      free(now);
      return;
