@@ -1,3 +1,2 @@
-# C_shell
-
-This project is made C_shell. This is my homework in the school.
+# Cシェル  
+これは、プロC演習課題のC言語で作成したshellです.
